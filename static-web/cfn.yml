@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: kitten
+Resources:
+  Hsn:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-04cb4ca688797756f
+      InstanceType: t2.micro
+      KeyName: firstkey
+      SecurityGroupIds:
+        - !Ref hsnsecgrp
+      Tags:
+        - Key: Name
+          Value: !Sub hasankitten ${AWS::StackName} Stack
+      UserData:
+        Fn::Base64: |
+          #! /bin/bash
+          yum update -y
+          yum install httpd -y
+          TOKEN="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"
+          FOLDER="https://$TOKEN@raw.githubusercontent.com/Hasan-ilker/hsn-kedicikler/main/static-web"
+          cd /var/www/html
+          wget ${FOLDER}/index.html
+          wget ${FOLDER}/cat0.jpg
+          wget ${FOLDER}/cat1.jpg
+          wget ${FOLDER}/cat2.jpg
+          wget ${FOLDER}/cat3.png
+          systemctl start httpd
+          systemctl enable httpd
+  hsnsecgrp:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ssh http # Required
+      GroupName: hasan
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+Outputs:
+  WebSiteURL:
+    Description: hasanec2url
+    Value: !Sub
+      - http://${PublicAddress}
+      - PublicAddress: !GetAtt Hsn.PublicDnsName
